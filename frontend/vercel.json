@@ -2,7 +2,7 @@
   "rewrites": [
     {
       "source": "/api/:path*",
-      "destination": "https://https://telecommunication-hmkv.onrender.com/api/:path*"
+      "destination": "https://telecommunication-hm.onrender.com/api/:path*"
     }
   ]
 }
