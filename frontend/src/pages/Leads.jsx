@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { leadsAPI, usersAPI } from '../services/api';
+import { leadsAPI, usersAPI, blocklistAPI } from '../services/api';
 import StatusBadge from '../components/common/StatusBadge';
 import { format } from 'date-fns';
 import { useAuth } from '../context/AuthContext';
@@ -13,7 +13,7 @@ const TEXT_MUTED = '#888';
 const BORDER = '#e5e2f5';
 const WHITE = '#ffffff';
 
-const STATUSES = ['All', 'Fresh', 'Connected', 'Call Not Responding', 'Call Back Later', 'Not interested', 'Demo Scheduled', 'Demo Done', 'Won', 'Lost'];
+const STATUSES = ['All', 'Fresh', 'Connected', 'Call Not Responding', 'Call Back Later', 'Not interested', 'Demo Scheduled', 'Demo Done', 'Won', 'Lost', 'Blocked'];
 const SOURCES = ['All', 'Manual', 'Facebook', 'WhatsApp', 'Website', 'Excel'];
 
 const filterOptions = [
@@ -72,6 +72,27 @@ export default function Leads() {
     if (!confirm('Delete this lead?')) return;
     await leadsAPI.delete(id);
     fetchLeads();
+  };
+
+  const handleBlock = async (lead, e) => {
+    e.stopPropagation();
+    const reason = prompt(`Enter reason for blocking ${lead.name} (optional):`, 'Spam Lead');
+    if (reason === null) return; // cancelled
+    
+    try {
+      const cleanPhone = lead.phone.replace(/[^0-9]/g, '');
+      await blocklistAPI.add({
+        phone: cleanPhone,
+        name: lead.name,
+        reason: reason || 'Spam Lead'
+      });
+      await leadsAPI.updateStatus(lead._id, { status: 'Blocked' });
+      alert(`Lead ${lead.name} has been blocked and added to blocklist.`);
+      fetchLeads();
+    } catch (err) {
+      console.error(err);
+      alert(err.response?.data?.message || 'Failed to block lead');
+    }
   };
 
   const toggleSelect = (id) => setSelected(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
@@ -236,11 +257,20 @@ export default function Leads() {
                       </td>
                       {isSuperAdmin && (
                         <td style={{ padding: '10px 12px' }}>
-                          <button onClick={e => handleDelete(lead._id, e)} style={{ width: 28, height: 28, borderRadius: 6, border: 'none', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ccc' }}
-                            onMouseEnter={e => { e.currentTarget.style.background = '#fff0f0'; e.currentTarget.style.color = '#e53e3e'; }}
-                            onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#ccc'; }}>
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
-                          </button>
+                          <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
+                            <button onClick={e => handleBlock(lead, e)} style={{ width: 28, height: 28, borderRadius: 6, border: 'none', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ccc' }}
+                              title="Block Lead"
+                              onMouseEnter={e => { e.currentTarget.style.background = '#fff0f0'; e.currentTarget.style.color = '#e53e3e'; }}
+                              onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#ccc'; }}>
+                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+                            </button>
+                            <button onClick={e => handleDelete(lead._id, e)} style={{ width: 28, height: 28, borderRadius: 6, border: 'none', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ccc' }}
+                              title="Delete Lead"
+                              onMouseEnter={e => { e.currentTarget.style.background = '#fff0f0'; e.currentTarget.style.color = '#e53e3e'; }}
+                              onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#ccc'; }}>
+                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+                            </button>
+                          </div>
                         </td>
                       )}
                     </tr>

@@ -95,7 +95,7 @@ const StatCard = ({ icon: Icon, label, value, sub, color }) => {
   );
 };
 
-const TABS = ['All', 'Tasks', 'Leaderboard', 'Bulk cancel tasks', 'List Delete', 'Bulk upload tasks', 'Call Summarization'];
+const TABS = ['All', 'Tasks', 'Leaderboard', 'Bulk upload tasks', 'Call Summarization'];
 
 export default function Reports() {
   const { user } = useAuth();
@@ -239,17 +239,31 @@ export default function Reports() {
 
   useEffect(() => { fetch(); }, []);
 
+  const fetchTasks = () => {
+    setTasksLoading(true);
+    followupsAPI.getAll()
+      .then(res => {
+        setTasksData(res.data.followups || []);
+      })
+      .catch(err => console.error(err))
+      .finally(() => setTasksLoading(false));
+  };
+
   useEffect(() => {
     if (activeTab === 'Tasks') {
-      setTasksLoading(true);
-      followupsAPI.getAll()
-        .then(res => {
-          setTasksData(res.data.followups || []);
-        })
-        .catch(err => console.error(err))
-        .finally(() => setTasksLoading(false));
+      fetchTasks();
     }
   }, [activeTab]);
+
+  const handleDeleteTask = async (taskId) => {
+    if (!window.confirm('Are you sure you want to delete this task?')) return;
+    try {
+      await followupsAPI.delete(taskId);
+      fetchTasks();
+    } catch (err) {
+      alert('Failed to delete task: ' + (err.response?.data?.message || err.message));
+    }
+  };
 
   useEffect(() => {
     if (activeTab === 'Call Summarization') {
@@ -438,34 +452,12 @@ export default function Reports() {
                 />
               </label>
             )}
-            {activeTab === 'Bulk cancel tasks' && (
-              <button
-                className="btn-secondary text-red-600 border-red-200 hover:bg-red-50"
-                onClick={() => alert('Select tasks from the Tasks page and use bulk-cancel. This tab is a report view.')}
-              >
-                Cancel Selected Tasks
-              </button>
-            )}
-            {activeTab === 'List Delete' && (
-              <button
-                className="btn-secondary text-red-600 border-red-200 hover:bg-red-50"
-                onClick={() => alert('Go to Leads page → select leads → bulk delete.')}
-              >
-                Delete Selected
-              </button>
-            )}
           </div>
           <div className="border border-gray-100 rounded-xl overflow-hidden">
             <table className="w-full text-sm">
               <thead className="bg-gray-50">
                 <tr>
-                  {activeTab === 'Tasks' && ['Task', 'Lead', 'Assignee', 'Status', 'Due Date', 'Priority'].map(h => (
-                    <th key={h} className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">{h}</th>
-                  ))}
-                  {activeTab === 'Bulk cancel tasks' && ['Task', 'Lead', 'Status', 'Scheduled At', 'Action'].map(h => (
-                    <th key={h} className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">{h}</th>
-                  ))}
-                  {activeTab === 'List Delete' && ['Lead Name', 'Phone', 'Status', 'Campaign', 'Action'].map(h => (
+                  {activeTab === 'Tasks' && ['Task', 'Lead', 'Assignee', 'Status', 'Due Date', 'Priority', 'Action'].map(h => (
                     <th key={h} className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">{h}</th>
                   ))}
                   {activeTab === 'Bulk upload tasks' && ['File Name', 'Uploaded At', 'Tasks Created', 'Status'].map(h => (
@@ -480,11 +472,11 @@ export default function Reports() {
                 {activeTab === 'Tasks' && (
                   tasksLoading ? (
                     <tr>
-                      <td colSpan={6} className="px-4 py-8 text-center"><div className="w-6 h-6 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin mx-auto" /></td>
+                      <td colSpan={7} className="px-4 py-8 text-center"><div className="w-6 h-6 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin mx-auto" /></td>
                     </tr>
                   ) : tasksData.length === 0 ? (
                     <tr>
-                      <td colSpan={6} className="px-4 py-8 text-center text-gray-400 text-sm">No tasks found.</td>
+                      <td colSpan={7} className="px-4 py-8 text-center text-gray-400 text-sm">No tasks found.</td>
                     </tr>
                   ) : (
                     tasksData.map((task, i) => (
@@ -505,6 +497,11 @@ export default function Reports() {
                           {task.scheduledAt ? new Date(task.scheduledAt).toLocaleDateString() : '—'}
                         </td>
                         <td className="px-4 py-3 text-gray-600 capitalize">{task.priority || 'medium'}</td>
+                        <td className="px-4 py-3 text-gray-600">
+                          <button onClick={() => handleDeleteTask(task._id)} className="text-red-500 hover:text-red-700 transition-colors p-1" title="Delete Task">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+                          </button>
+                        </td>
                       </tr>
                     ))
                   )
@@ -572,10 +569,8 @@ export default function Reports() {
 
                 {activeTab !== 'Tasks' && activeTab !== 'Call Summarization' && activeTab !== 'Bulk upload tasks' && (
                   <tr>
-                    <td colSpan={6} className="px-4 py-8 text-center text-gray-400 text-sm">
-                      {activeTab === 'Bulk cancel tasks' ? 'No pending tasks to cancel. Go to Tasks page to select tasks for bulk cancellation.' :
-                       activeTab === 'List Delete' ? 'No leads selected for deletion. Go to Leads page to select leads.' :
-                       'Nothing to show'}
+                    <td colSpan={7} className="px-4 py-8 text-center text-gray-400 text-sm">
+                      Nothing to show
                     </td>
                   </tr>
                 )}

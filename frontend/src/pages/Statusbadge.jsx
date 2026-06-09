@@ -8,6 +8,7 @@ const statusConfig = {
   'Demo Done': { bg: 'bg-teal-50', text: 'text-teal-700', dot: 'bg-teal-500' },
   'Won': { bg: 'bg-emerald-50', text: 'text-emerald-700', dot: 'bg-emerald-500' },
   'Lost': { bg: 'bg-gray-100', text: 'text-gray-600', dot: 'bg-gray-400' },
+  'Blocked': { bg: 'bg-rose-100', text: 'text-rose-700', dot: 'bg-rose-500' },
 };
 
 export default function StatusBadge({ status, size = 'sm' }) {

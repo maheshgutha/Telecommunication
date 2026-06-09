@@ -16,7 +16,7 @@ const leadSchema = new mongoose.Schema({
   email: { type: String, default: '' },
   status: {
     type: String,
-    enum: ['Fresh', 'Connected', 'Call Not Responding', 'Call Back Later', 'Not interested', 'Demo Scheduled', 'Demo Done', 'Won', 'Lost'],
+    enum: ['Fresh', 'Connected', 'Call Not Responding', 'Call Back Later', 'Not interested', 'Demo Scheduled', 'Demo Done', 'Won', 'Lost', 'Blocked'],
     default: 'Fresh'
   },
   rating: { type: Number, min: 0, max: 5, default: 0 },
