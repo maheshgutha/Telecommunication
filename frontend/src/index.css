@@ -1,0 +1,97 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', sans-serif;
+  background: #f3f1fb;
+  color: #2d2d6b;
+}
+
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: #f1f5f9; }
+::-webkit-scrollbar-thumb { background: #c4b5fd; border-radius: 4px; }
+
+@layer components {
+  .btn-primary {
+    @apply bg-purple-700 hover:bg-purple-800 text-white font-medium px-4 py-2 rounded-lg transition-all duration-150 flex items-center gap-2 text-sm;
+  }
+  .btn-secondary {
+    @apply bg-white hover:bg-gray-50 text-purple-700 font-medium px-4 py-2 rounded-lg border border-purple-200 transition-all duration-150 flex items-center gap-2 text-sm;
+  }
+  .btn-ghost {
+    @apply hover:bg-purple-50 text-gray-600 font-medium px-3 py-2 rounded-lg transition-all duration-150 flex items-center gap-2 text-sm;
+  }
+  .input-field {
+    @apply w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white transition-all;
+  }
+  .card {
+    @apply bg-white rounded-xl border border-purple-100 shadow-sm;
+  }
+  .status-badge {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+  }
+}
+
+.sidebar-nav-item {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #888;
+  font-size: 18px;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  user-select: none;
+}
+.sidebar-nav-item:hover {
+  background: #f0ecff;
+  color: #5b3fc7;
+  transform: scale(1.08);
+}
+.sidebar-nav-item.active {
+  background: #f0ecff;
+  color: #5b3fc7;
+  transform: scale(1.04);
+}
+.sidebar-nav-item.whatsapp-nav-item {
+  color: #25D366;
+}
+.sidebar-nav-item.whatsapp-nav-item:hover {
+  background: #e8f8f0;
+  color: #128C7E;
+  transform: scale(1.08);
+}
+.sidebar-nav-item.whatsapp-nav-item.active {
+  background: #e8f8f0;
+  color: #128C7E;
+}
+
+.sidebar-nav-item.logout-nav-item {
+  color: #ef4444;
+}
+.sidebar-nav-item.logout-nav-item:hover {
+  background: #fee2e2;
+  color: #b91c1c;
+  transform: scale(1.08);
+}
+
+.stat-card {
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+}
+.stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px -3px rgba(91, 63, 199, 0.08), 0 4px 6px -2px rgba(91, 63, 199, 0.04);
+  border-color: #d8d4f2 !important;
+}
+
+.animate-fade-in { animation: fadeIn 0.2s ease-in-out; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+
+.animate-spin-slow { animation: spin 2s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
